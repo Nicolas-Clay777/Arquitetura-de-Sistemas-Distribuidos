@@ -46,3 +46,18 @@ def process_message(message_str, conn):
             
     except json.JSONDecodeError:
         print("[ERRO] Falha ao decodificar JSON.")
+
+def start_master():
+    server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server.bind((HOST, PORT))
+    server.listen()
+    print(f"[MASTER INICIADO] Escutando na porta {PORT}...")
+    print(f"UUID: {SERVER_UUID}\n{'-'*30}")
+    
+    while True:
+        conn, addr = server.accept()
+        thread = threading.Thread(target=handle_worker, args=(conn, addr))
+        thread.start()
+
+if __name__ == "__main__":
+    start_master()
