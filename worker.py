@@ -2,7 +2,7 @@ import socket
 import time
 import json
 
-HOST = '26.251.82.145'
+HOST = '127.0.0.1'
 PORT = 5000
 SERVER_UUID = "Master_A"
 
