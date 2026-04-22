@@ -4,7 +4,7 @@ import json
 
 HOST = '127.0.0.1'
 PORT = 5000
-SERVER_UUID = "Master_A"
+SERVER_UUID = "Master_7"
 
 HEARTBEAT_INTERVAL = 30 
 

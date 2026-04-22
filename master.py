@@ -4,7 +4,7 @@ import json
 
 HOST = '127.0.0.1'
 PORT = 5000
-SERVER_UUID = "Master_A"
+SERVER_UUID = "Master_7"
 
 def handle_worker(conn, addr):
     print(f"Worker conectado de {addr}")
@@ -24,7 +24,7 @@ def handle_worker(conn, addr):
                     if line.strip():
                         process_message(line, conn)
                         
-            except ConnectionResetError:
+            except (ConnectionResetError, ConnectionAbortedError, BrokenPipeError):
                 break
                 
     print(f"[DESCONECTADO] Worker {addr} desconectou.")
