@@ -55,13 +55,13 @@ def send_request_help(neighbor, request_id, payload):
         line, _ = buffer.split('\n', 1)
         return json.loads(line)
     except socket.timeout:
-        logging.info(f"request_help to {neighbor} timed out")
+        logging.info(f"request_help para {neighbor} expirou (timeout)")
         return None
     except (ConnectionRefusedError, ConnectionResetError, OSError) as e:
-        logging.info(f"request_help network error to {neighbor}: {e}")
+        logging.info(f"request_help erro de rede para {neighbor}: {e}")
         return None
     except Exception as e:
-        logging.info(f"request_help error: {e}")
+        logging.info(f"request_help erro: {e}")
         return None
     finally:
         try:
@@ -89,13 +89,13 @@ def try_request_help():
         log_m2m(request_id, mtype)
         if mtype == 'response_accepted':
             worker_uuid = resp.get('payload', {}).get('worker_uuid')
-            logging.info(f"Request {request_id} accepted by {neighbor}, worker {worker_uuid}")
+            logging.info(f"Pedido {request_id} aceite por {neighbor}, worker {worker_uuid}")
             lender_host, lender_port = neighbor
             with borrowed_lock:
                 borrowed_registry[worker_uuid] = {'to': SERVER_UUID, 'host': lender_host, 'port': lender_port}
             break
         else:
-            logging.info(f"Request {request_id} rejected by {neighbor}")
+            logging.info(f"Pedido {request_id} rejeitado por {neighbor}")
 
 
 def release_borrowed_worker(worker_uuid, lender_info):
@@ -113,9 +113,9 @@ def release_borrowed_worker(worker_uuid, lender_info):
         }
         try:
             wconn.sendall((json.dumps(release_msg) + "\n").encode('utf-8'))
-            logging.info(f"M2M {request_id} command_release to {worker_uuid}")
+            logging.info(f"M2M {request_id} command_release para {worker_uuid}")
         except Exception as e:
-            logging.info(f"Failed to send command_release: {e}")
+            logging.info(f"Falha ao enviar command_release: {e}")
         
         # Remove from borrowed registry
         with borrowed_lock:
@@ -137,15 +137,15 @@ def release_borrowed_worker(worker_uuid, lender_info):
                 s.connect((lender_host, lender_port))
                 s.sendall((json.dumps(notify_msg) + "\n").encode('utf-8'))
                 s.close()
-                logging.info(f"M2M {notify_id} notify_worker_returned sent to {lender_host}:{lender_port}")
+                logging.info(f"M2M {notify_id} notify_worker_returned enviado para {lender_host}:{lender_port}")
             except socket.timeout:
-                logging.info(f"Timeout notifying lender {lender_host}:{lender_port}")
+                logging.info(f"Timeout ao notificar lender {lender_host}:{lender_port}")
             except (ConnectionRefusedError, ConnectionResetError, OSError) as e:
-                logging.info(f"Failed to notify lender (network error): {e}")
+                logging.info(f"Falha ao notificar lender (erro de rede): {e}")
             except Exception as e:
-                logging.info(f"Failed to notify lender: {e}")
+                logging.info(f"Falha ao notificar lender: {e}")
     except Exception as e:
-        logging.info(f"release_borrowed_worker error: {e}")
+        logging.info(f"Erro em release_borrowed_worker: {e}")
 
 
 def monitor_loop():
@@ -159,11 +159,11 @@ def monitor_loop():
             current_load = qsize / max(1, local_count)
             
             if current_load > SATURATION_THRESHOLD:
-                logging.info(f"Current load {current_load:.2f} > {SATURATION_THRESHOLD}, requesting help")
+                logging.info(f"Carga atual {current_load:.2f} > {SATURATION_THRESHOLD}, a solicitar ajuda")
                 try_request_help()
             
             if current_load < RELEASE_THRESHOLD and len(borrowed_registry) > 0:
-                logging.info(f"Current load {current_load:.2f} < {RELEASE_THRESHOLD}, releasing borrowed workers")
+                logging.info(f"Carga atual {current_load:.2f} < {RELEASE_THRESHOLD}, a libertar workers emprestados")
                 with borrowed_lock:
                     to_release = list(borrowed_registry.items())
                 for worker_uuid, lender_info in to_release:
@@ -172,7 +172,7 @@ def monitor_loop():
             print(f"[CONTADOR] Local workers: {local_count} | Borrowed workers: {len(borrowed_registry)} | Load: {current_load:.2f}")
             time.sleep(2)
         except Exception as e:
-            logging.info(f"monitor_loop error: {e}")
+            logging.info(f"Erro em monitor_loop: {e}")
             time.sleep(2)
 
 
@@ -201,13 +201,13 @@ def handle_worker(conn, addr):
                         process_message(line, conn)
                         
             except (ConnectionResetError, ConnectionAbortedError, BrokenPipeError):
-                logging.info(f"Worker {addr} connection closed")
+                logging.info(f"Ligação do worker {addr} encerrada")
                 break
             except OSError as e:
                 logging.info(f"Worker {addr} OSError: {e}")
                 break
             except Exception as e:
-                logging.info(f"Worker {addr} error: {e}")
+                logging.info(f"Erro no worker {addr}: {e}")
                 break
                 
     print(f"[DESCONECTADO] Worker {addr} desconectou-se.")
@@ -232,7 +232,7 @@ def process_message(message_str, conn):
                         borrowed_registry[lend_uuid] = {'to': payload.get('from', 'unknown'), 'host': lender_addr[0] if lender_addr else '127.0.0.1', 'port': lender_addr[1] if lender_addr else PORT}
                     resp = {"type": "response_accepted", "request_id": request_id, "payload": {"worker_uuid": lend_uuid}}
                     conn.sendall((json.dumps(resp) + "\n").encode('utf-8'))
-                    logging.info(f"M2M {request_id} response_accepted (lent {lend_uuid})")
+                    logging.info(f"M2M {request_id} response_accepted (emprestado {lend_uuid})")
                     print(f"[CONTADOR] Local workers: {len([w for w in workers_map.keys() if w not in borrowed_registry])} | Borrowed workers (lending): {len(borrowed_registry)}")
                     with workers_lock:
                         wconn = workers_map.get(lend_uuid)
@@ -242,13 +242,13 @@ def process_message(message_str, conn):
                         redirect = {"type": "command_redirect", "request_id": request_id, "payload": {"reconnect_host": target_host, "reconnect_port": target_port, "target_server_uuid": payload.get('target_server_uuid')}}
                         try:
                             wconn.sendall((json.dumps(redirect) + "\n").encode('utf-8'))
-                            logging.info(f"M2M {request_id} command_redirect sent to worker {lend_uuid}")
+                            logging.info(f"M2M {request_id} command_redirect enviado para worker {lend_uuid}")
                         except Exception:
-                            logging.info(f"Failed sending command_redirect to worker {lend_uuid}")
+                            logging.info(f"Falha ao enviar command_redirect para worker {lend_uuid}")
                 else:
                     resp = {"type": "response_rejected", "request_id": request_id, "payload": {}}
                     conn.sendall((json.dumps(resp) + "\n").encode('utf-8'))
-                    logging.info(f"M2M {request_id} response_rejected (no available workers)")
+                    logging.info(f"M2M {request_id} response_rejected (sem workers disponíveis)")
                 return
 
             if mtype == 'register_temporary_worker':
@@ -260,12 +260,12 @@ def process_message(message_str, conn):
                         workers_map[worker_uuid] = conn
                     with borrowed_lock:
                         borrowed_registry[worker_uuid] = origin
-                    logging.info(f"M2M {request_id} register_temporary_worker {worker_uuid} from {origin}")
+                    logging.info(f"M2M {request_id} register_temporary_worker {worker_uuid} de {origin}")
                     print(f"[CONTADOR] Local workers: {len([w for w in workers_map.keys() if w not in borrowed_registry])} | Borrowed workers: {len(borrowed_registry)}")
                 return
 
             if mtype in ('response_accepted', 'response_rejected'):
-                logging.info(f"M2M {request_id} received {mtype}")
+                logging.info(f"M2M {request_id} recebeu {mtype}")
                 return
 
             if mtype == 'notify_worker_returned':
@@ -347,10 +347,10 @@ def start_master():
             thread = threading.Thread(target=handle_worker, args=(conn, addr))
             thread.start()
         except KeyboardInterrupt:
-            logging.info("Master shutting down")
+            logging.info("Master a encerrar")
             break
         except OSError as e:
-            logging.info(f"Master socket error: {e}. Attempting recovery...")
+            logging.info(f"Erro no socket do Master: {e}. A tentar recuperar...")
             time.sleep(2)
 
 if __name__ == "__main__":

@@ -31,7 +31,7 @@ def start_worker():
                     if SERVER_UUID != ORIGINAL_SERVER_UUID:
                         reg = {"type": "register_temporary_worker", "request_id": str(uuid.uuid4()), "payload": {"WORKER_UUID": WORKER_UUID, "SERVER_UUID": SERVER_UUID, "ORIGINAL_SERVER_UUID": ORIGINAL_SERVER_UUID}}
                         s.sendall((json.dumps(reg) + "\n").encode('utf-8'))
-                        logging.info(f"Sent register_temporary_worker for {WORKER_UUID} to {SERVER_UUID}")
+                        logging.info(f"Enviado register_temporary_worker para {SERVER_UUID} do {WORKER_UUID}")
                 except Exception:
                     pass
                 
