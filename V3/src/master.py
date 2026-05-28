@@ -20,12 +20,14 @@ import threading
 # =====================================================================
 # CONFIGURAÇÕES 
 # =====================================================================
-MEU_IP_NA_REDE = '127.0.0.1'
-MINHA_PORTA = 54321
+MEU_IP_NA_REDE = '10.62.217.11'
+MINHA_PORTA = 8000
 
 # Para se conectar ao PC do seu amigo, tire o # e coloque o IP dele:
 MEUS_VIZINHOS_FIXOS = [
-    # {"id": "Master_Amigo", "host": "192.168.1.75", "port": 54321}
+    {"id": "Master_Amigo", "host": "10.62.217.208", "port": 8000},
+    {"id": "Master_Amigo2", "host": "10.62.217.39", "port": 8000},
+
 ]
 
 HOST = os.environ.get("P2P_HOST", MEU_IP_NA_REDE)
@@ -498,17 +500,24 @@ def start_master():
         s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         s.bind(('0.0.0.0', PORT))
         s.listen()
+        
+        s.settimeout(1.0) 
+        
         logger.info(f"=== Master Server na porta {PORT} (Limite: {SATURATION_THRESHOLD}) ===")
         logger.info(f"[Master] OK - ONLINE | Aguardando conexões em 0.0.0.0:{PORT}")
         logger.info(f"[Master] Pressione Ctrl+C para encerrar.")
         try:
             while True:
-                conn, addr = s.accept()
-                threading.Thread(target=handle_client, args=(conn, addr), daemon=True).start()
+                try:
+                    conn, addr = s.accept()
+                    threading.Thread(target=handle_client, args=(conn, addr), daemon=True).start()
+                except socket.timeout:
+                    # Ignora o timeout e volta para o loop, permitindo checar o KeyboardInterrupt
+                    pass
         except KeyboardInterrupt:
             logger.info(f"[Master] Encerrando servidor...")
             logger.info(f"[Master] OFFLINE.")
-            sys.exit(0)
+            os._exit(0)  # Força a saída
 
 
 if __name__ == "__main__":

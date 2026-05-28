@@ -20,8 +20,8 @@ import threading
 # =====================================================================
 # CONFIGURAÇÕES 
 # =====================================================================
-MEU_IP_NA_REDE = '127.0.0.1'
-MINHA_PORTA = 54321
+MEU_IP_NA_REDE = '10.62.217.11'
+MINHA_PORTA = 5000
 
 HOST = os.environ.get("P2P_HOST", MEU_IP_NA_REDE)
 PORT = int(os.environ.get("P2P_PORT", MINHA_PORTA))
@@ -184,7 +184,7 @@ def start_worker():
     except KeyboardInterrupt:
         logger.info(f"[Worker] Encerrando Worker {WORKER_UUID}...")
         logger.info(f"[Worker] OFFLINE.")
-        sys.exit(0)
+        os._exit(0)  # Força a saída
 
 
 if __name__ == "__main__":
