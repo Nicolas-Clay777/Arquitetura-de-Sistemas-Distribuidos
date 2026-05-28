@@ -1,7 +1,7 @@
 # Relatório Técnico: Balanceamento de Carga P2P (Sprint 03)
 
 > [!IMPORTANT]  
-> Este documento comprova o atendimento integral aos requisitos estabelecidos no documento `plano_professor.txt`, detalhando as soluções arquiteturais, tratamento de falhas e os fluxos de teste para a Sprint 03.
+> Este documento comprova o atendimento integral aos requisitos estabelecidos no documento `message.txt`, detalhando as soluções arquiteturais, tratamento de falhas e os fluxos de teste para a Sprint 03.
 
 ---
 

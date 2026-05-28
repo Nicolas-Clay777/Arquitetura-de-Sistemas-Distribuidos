@@ -36,24 +36,21 @@ A análise identificou **17 gaps** organizados por prioridade:
 
 | Arquivo | Mudanças |
 |---------|----------|
-| [config.py](file:///C:/Users/luizg/Downloads/p2p-dynamic-load-balancing-main%20(1)/p2p-dynamic-load-balancing-main/src/config.py) | Adicionar configuração de logging |
-| [processor.py](file:///C:/Users/luizg/Downloads/p2p-dynamic-load-balancing-main%20(1)/p2p-dynamic-load-balancing-main/src/processor.py) | Strict parsing, validação campos obrigatórios, lock na FILA_TAREFAS, log de worker emprestado |
-| [master.py](file:///C:/Users/luizg/Downloads/p2p-dynamic-load-balancing-main%20(1)/p2p-dynamic-load-balancing-main/src/master.py) | Timestamps, contadores, lifecycle logging, entrega imediata de commands, heartbeat, tratamento de erros, conexões persistentes com workers |
-| [worker.py](file:///C:/Users/luizg/Downloads/p2p-dynamic-load-balancing-main%20(1)/p2p-dynamic-load-balancing-main/src/worker.py) | CT08 fix (retorno automático ao Master original), heartbeat, simulação NOK |
+| [master.py] | Timestamps, contadores, lifecycle logging, entrega imediata de commands, heartbeat, tratamento de erros, conexões persistentes com workers |
+| [worker.py] | CT08 fix (retorno automático ao Master original), heartbeat, simulação NOK |
 
 ---
 
 ## Tarefa 01 — Logging com Timestamps (Item 28)
 
 **Arquivos:**
-- Modificar: `src/config.py`
 - Modificar: `src/master.py` (todas as funções com print)
 - Modificar: `src/worker.py` (todas as funções com print)
-- Modificar: `src/processor.py` (todas as funções com print)
+
 
 **Objetivo:** Substituir todos os `print()` por um sistema de logging com timestamps automáticos. Usar o módulo `logging` do Python para que TODA mensagem tenha `[YYYY-MM-DD HH:MM:SS]` no início.
 
-- [ ] **Step 1:** Em `config.py`, adicionar configuração de logging:
+- [ ] **Step 1:** adicionar configuração de logging:
 ```python
 import logging
 
@@ -75,7 +72,7 @@ config.logger.info(f"[P2P][RECV] type=request_help | request_id={request_id} | M
 
 - [ ] **Step 3:** Em `worker.py`, substituir todos os `print(...)` por `config.logger.info(...)`.
 
-- [ ] **Step 4:** Em `processor.py`, substituir todos os `print(...)` por `config.logger.info(...)`.
+- [ ] **Step 4:** substituir todos os `print(...)` por `config.logger.info(...)`.
 
 - [ ] **Step 5:** Garantir que TODA emissão e recebimento de mensagem M2M logue: `[SEND]` ou `[RECV]`, `type=X`, `request_id=Y`. Formato:
 ```
@@ -89,7 +86,6 @@ config.logger.info(f"[P2P][RECV] type=request_help | request_id={request_id} | M
 
 **Arquivos:**
 - Modificar: `src/master.py`
-- Modificar: `src/processor.py`
 
 **Objetivo:** Exibir contadores de workers a cada mudança e logar ciclo de vida completo de workers emprestados.
 
@@ -119,7 +115,7 @@ config.logger.info(
 )
 ```
 
-- [ ] **Step 5:** Em `processor.py`, na função `processar_requisicao_worker`, quando enviar QUERY, logar se o worker é local ou emprestado:
+- [ ] **Step 5:** na função `processar_requisicao_worker`, quando enviar QUERY, logar se o worker é local ou emprestado:
 ```python
 # Recebe parâmetro is_borrowed
 if is_borrowed:
@@ -133,12 +129,11 @@ else:
 ## Tarefa 03 — Strict Parsing e Validação de Campos Obrigatórios (Item 31, DoD 8)
 
 **Arquivos:**
-- Modificar: `src/processor.py`
 - Modificar: `src/master.py`
 
 **Objetivo:** Validar campos obrigatórios em CADA tipo de mensagem. Mensagens com campos faltando devem gerar log de erro mas NÃO derrubar o processo.
 
-- [ ] **Step 1:** Em `processor.py`, criar função `validar_campos_obrigatorios(msg, campos, contexto)`:
+- [ ] **Step 1:** criar função `validar_campos_obrigatorios(msg, campos, contexto)`:
 ```python
 def validar_campos_obrigatorios(msg, campos_obrigatorios, contexto=""):
     """Verifica se todos os campos obrigatórios estão presentes.
@@ -197,12 +192,11 @@ except Exception as e:
 ## Tarefa 04 — Race Condition na FILA_TAREFAS (Item 38)
 
 **Arquivos:**
-- Modificar: `src/processor.py`
 - Modificar: `src/master.py`
 
 **Objetivo:** Proteger `FILA_TAREFAS` contra condições de corrida com um lock dedicado.
 
-- [ ] **Step 1:** Em `processor.py`, criar lock para a fila:
+- [ ] **Step 1:** criar lock para a fila:
 ```python
 import threading
 fila_lock = threading.Lock()
@@ -277,12 +271,11 @@ except (socket.timeout, ConnectionRefusedError, ConnectionResetError, OSError) a
 
 **Arquivos:**
 - Modificar: `src/worker.py`
-- Modificar: `src/processor.py`
 - Modificar: `src/master.py`
 
 **Objetivo:** Implementar o protocolo de Heartbeat conforme o payload oficial do professor.
 
-- [ ] **Step 1:** Em `processor.py`, adicionar handler para `TASK: HEARTBEAT`:
+- [ ] **Step 1:** adicionar handler para `TASK: HEARTBEAT`:
 ```python
 def processar_requisicao_worker(msg, worker_id, is_borrowed=False):
     response = {}

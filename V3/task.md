@@ -9,22 +9,22 @@
 
 ### Tarefa 1: Implementação de Observabilidade (Item 28)
 - **Status**: `[x] Concluído`
-- **Arquivos modificados**: `config.py`, `master.py`, `processor.py`, `worker.py`
+- **Arquivos modificados**: `master.py`, `worker.py`
 - **Detalhes**: Substituição global de prints no terminal pelo módulo `logging`. Configuração de timestamps globais no formato `[YYYY-MM-DD HH:MM:SS]`. Injeção de tags de rastreabilidade `[SEND]/[RECV]` em todas as mensagens P2P no `master.py`.
 
 ### Tarefa 2: Painel de Estado e Lifecycle (Itens 29, 30)
 - **Status**: `[x] Concluído`
-- **Arquivos modificados**: `master.py`, `processor.py`
+- **Arquivos modificados**: `master.py`
 - **Detalhes**: Criação da função `log_estado_workers()` que exibe em tempo real o balanço de Workers (Locais, Emprestados, Tomados). Adição de rastreamento do clico de vida (Lifecycle) contando as tarefas de cada worker emprestado antes da devolução.
 
 ### Tarefa 3: Validação Estrita de Contratos JSON (DoD 8, Item 31)
 - **Status**: `[x] Concluído`
-- **Arquivos modificados**: `processor.py`, `master.py`
+- **Arquivos modificados**:  `master.py`
 - **Detalhes**: Criação do dicionário estrutural `CAMPOS_OBRIGATORIOS`. Implementação da função `validar_campos_obrigatorios()` para checar chaves vitais (`capacity`, `request_id`, etc.) antes do processamento, evitando quebras (crashes) na arquitetura Master.
 
 ### Tarefa 4: Correção de Concorrência e Race Conditions (Item 38)
 - **Status**: `[x] Concluído`
-- **Arquivos modificados**: `processor.py`, `master.py`
+- **Arquivos modificados**:  `master.py`
 - **Detalhes**: Inserção de `threading.Lock()` nomeado `fila_lock` protegendo o objeto `FILA_TAREFAS`. Acesso concorrente entre as threads `monitor_carga`, `gerador_tarefas` e `handle_client` foi serializado para proteger o estado do sistema.
 
 ### Tarefa 5: Resiliência em Empréstimo P2P — CT08 (Item 26)

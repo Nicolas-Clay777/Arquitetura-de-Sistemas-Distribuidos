@@ -2,7 +2,7 @@
 """
 =======================================================================
   WORKER NODE — Sistema P2P com Balanceamento de Carga Dinâmico
-  Arquivo consolidado (config + worker)
+  Arquivo consolidado (worker)
   Sprints 01, 02 e 03
 =======================================================================
 """
@@ -18,7 +18,7 @@ import logging
 import threading
 
 # =====================================================================
-# CONFIGURAÇÕES (antigo config.py)
+# CONFIGURAÇÕES 
 # =====================================================================
 MEU_IP_NA_REDE = '127.0.0.1'
 MINHA_PORTA = 54321

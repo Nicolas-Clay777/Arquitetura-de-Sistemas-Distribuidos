@@ -2,7 +2,7 @@
 """
 =======================================================================
   MASTER NODE — Sistema P2P com Balanceamento de Carga Dinâmico
-  Arquivo consolidado (config + processor + master)
+  Arquivo consolidado (master)
   Sprints 01, 02 e 03
 =======================================================================
 """
@@ -18,7 +18,7 @@ import logging
 import threading
 
 # =====================================================================
-# CONFIGURAÇÕES (antigo config.py)
+# CONFIGURAÇÕES 
 # =====================================================================
 MEU_IP_NA_REDE = '127.0.0.1'
 MINHA_PORTA = 54321
@@ -64,7 +64,7 @@ logging.basicConfig(
 logger = logging.getLogger("p2p")
 
 # =====================================================================
-# PROCESSADOR DE MENSAGENS (antigo processor.py)
+# PROCESSADOR DE MENSAGENS 
 # =====================================================================
 if os.environ.get("P2P_EMPTY_TASKS") == "true":
     FILA_TAREFAS = []
