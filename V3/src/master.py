@@ -3,7 +3,7 @@
 =======================================================================
   MASTER NODE — Sistema P2P com Balanceamento de Carga Dinâmico
   Arquivo consolidado (master)
-  Sprints 01, 02 e 03
+  Sprints 01, 02, 03 e 04
 =======================================================================
 """
 
@@ -16,6 +16,9 @@ import socket
 import random
 import logging
 import threading
+from datetime import datetime, timezone
+
+from monitor import start_monitor
 
 # =====================================================================
 # CONFIGURAÇÕES 
@@ -137,7 +140,7 @@ def parse_mensagem(msg_str):
 
 
 def processar_requisicao_worker(msg, worker_id, is_borrowed=False):
-    global _tarefas_concluidas_avisado
+    global _tarefas_concluidas_avisado, _tasks_completed, _tasks_failed
     response = {}
     if msg.get("TASK") == "HEARTBEAT":
         response = {
@@ -155,6 +158,9 @@ def processar_requisicao_worker(msg, worker_id, is_borrowed=False):
                     logger.info(f"[Master] Enviando '{tarefa}' para Worker EMPRESTADO {worker_id}")
                 else:
                     logger.info(f"[Master] Enviando '{tarefa}' para Worker LOCAL {worker_id}")
+                # Sprint 4: registrar despacho de tarefa
+                with _monitor_lock:
+                    _task_dispatch_times[worker_id] = time.time()
             else:
                 if not _tarefas_concluidas_avisado:
                     logger.info(f"[Master] Todas as tarefas foram concluidas!")
@@ -167,6 +173,13 @@ def processar_requisicao_worker(msg, worker_id, is_borrowed=False):
         else:
             logger.info(f"[Master] Worker LOCAL {worker_id} reportou {status}")
         response = {"STATUS": "ACK", "WORKER_UUID": worker_id}
+        # Sprint 4: contabilizar conclusão/falha
+        with _monitor_lock:
+            if status == "OK":
+                _tasks_completed += 1
+            else:
+                _tasks_failed += 1
+            _task_dispatch_times.pop(worker_id, None)
     return response
 
 
@@ -183,6 +196,14 @@ PENDING_WORKER_COMMANDS = {}   # maps worker_id -> pending command dict
 BORROWED_WORKER_TASKS = {}     # tracks tasks executed per borrowed worker
 
 _lock = threading.Lock()
+
+# =====================================================================
+# SPRINT 4 — Contadores de monitoramento (não alteram lógica existente)
+# =====================================================================
+_tasks_completed = 0
+_tasks_failed = 0
+_task_dispatch_times = {}      # worker_id -> timestamp de quando recebeu tarefa
+_monitor_lock = threading.Lock()
 
 
 def log_estado_workers():
@@ -493,9 +514,89 @@ def gerador_tarefas():
                     logger.info(f"[Gerador] Injetadas {len(novas)} novas tarefas. Fila total: {len(FILA_TAREFAS)}")
 
 
+# =====================================================================
+# SPRINT 4 — Snapshot do estado da farm para o monitor
+# =====================================================================
+def get_farm_snapshot():
+    """Retorna snapshot do estado atual da farm para envio ao supervisor."""
+    with _lock:
+        total_registered = len(WORKERS_ATIVOS)
+        borrowed_out = len(LENT_WORKERS)
+        borrowed_in = len(BORROWED_WORKERS)
+        workers_alive = total_registered
+
+        # Lista de workers emprestados (entrada e saída)
+        borrowed_workers_list = []
+        for wid, peer in LENT_WORKERS.items():
+            borrowed_workers_list.append({"direction": "out", "peer_uuid": peer})
+        for wid, peer in BORROWED_WORKERS.items():
+            borrowed_workers_list.append({"direction": "in", "peer_uuid": peer})
+
+        # Estado dos vizinhos
+        neighbors_list = []
+        for n in NEIGHBORS:
+            neighbors_list.append({
+                "server_uuid": n["id"],
+                "status": "available",
+                "last_heartbeat": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+            })
+
+    with fila_lock:
+        tasks_pending = len(FILA_TAREFAS)
+
+    with _monitor_lock:
+        tasks_completed = _tasks_completed
+        tasks_failed = _tasks_failed
+        tasks_running = len(_task_dispatch_times)
+        workers_utilization = tasks_running
+
+        # Idade da tarefa mais antiga em execução
+        if _task_dispatch_times:
+            oldest = min(_task_dispatch_times.values())
+            oldest_task_age_s = int(time.time() - oldest)
+        else:
+            oldest_task_age_s = 0
+
+    workers_idle = max(0, workers_alive - workers_utilization)
+    workers_home = max(0, total_registered - borrowed_in)
+
+    return {
+        "farm_state": {
+            "workers": {
+                "total_registered": total_registered,
+                "workers_utilization": workers_utilization,
+                "workers_alive": workers_alive,
+                "workers_idle": workers_idle,
+                "workers_borrowed": borrowed_out,
+                "workers_received": borrowed_in,
+                "workers_failed": 0,
+                "workers_home": workers_home,
+                "workers_available_capacity": max(0, CAPACITY - tasks_pending),
+                "borrowed_workers": borrowed_workers_list,
+            },
+            "tasks": {
+                "tasks_pending": tasks_pending,
+                "tasks_running": tasks_running,
+                "tasks_completed": tasks_completed,
+                "tasks_failed": tasks_failed,
+                "oldest_task_age_s": oldest_task_age_s,
+            },
+        },
+        "config_thresholds": {
+            "max_task": SATURATION_THRESHOLD,
+            "warn_cpu_percent": 85,
+            "warn_memory_percent": 85,
+            "release_task": RELEASE_THRESHOLD,
+        },
+        "neighbors": neighbors_list,
+    }
+
+
 def start_master():
     threading.Thread(target=monitor_carga, daemon=True).start()
     threading.Thread(target=gerador_tarefas, daemon=True).start()
+    # Sprint 4: iniciar monitoramento para o supervisor
+    start_monitor(SERVER_UUID, get_farm_snapshot)
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         s.bind(('0.0.0.0', PORT))
