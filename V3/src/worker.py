@@ -20,8 +20,8 @@ import threading
 # =====================================================================
 # CONFIGURAÇÕES 
 # =====================================================================
-MEU_IP_NA_REDE = '10.62.217.11'
-MINHA_PORTA = 5000
+MEU_IP_NA_REDE = '127.0.0.1'
+MINHA_PORTA = 8000
 
 HOST = os.environ.get("P2P_HOST", MEU_IP_NA_REDE)
 PORT = int(os.environ.get("P2P_PORT", MINHA_PORTA))

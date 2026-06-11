@@ -23,7 +23,7 @@ from monitor import start_monitor
 # =====================================================================
 # CONFIGURAÇÕES 
 # =====================================================================
-MEU_IP_NA_REDE = '10.62.217.11'
+MEU_IP_NA_REDE = '127.0.0.1'
 MINHA_PORTA = 8000
 
 # Para se conectar ao PC do seu amigo, tire o # e coloque o IP dele:
@@ -38,8 +38,8 @@ PORT = int(os.environ.get("P2P_PORT", MINHA_PORTA))
 DELIMITER = '\n'
 HEARTBEAT_INTERVAL = int(os.environ.get("P2P_HEARTBEAT_INTERVAL", 5))
 
-SERVER_UUID = os.environ.get("P2P_SERVER_UUID", "Master_Local")
-WORKER_UUID = os.environ.get("P2P_WORKER_UUID", "Worker_Local")
+SERVER_UUID = os.environ.get("P2P_SERVER_UUID", "Grupo_7")
+WORKER_UUID = os.environ.get("P2P_WORKER_UUID", "Worker_7")
 
 CAPACITY = 10
 SATURATION_THRESHOLD = 10
