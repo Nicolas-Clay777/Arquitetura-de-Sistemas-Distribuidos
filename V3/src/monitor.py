@@ -112,7 +112,7 @@ def build_payload(server_uuid, farm_snapshot):
 
     return {
         "server_uuid": server_uuid,
-        "hostname": f"{server_uuid}.farm.local",
+        "hostname": f"{server_uuid}",
         "role": "master",
         "task": "performance_report",
         "timestamp": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),

@@ -38,8 +38,8 @@ PORT = int(os.environ.get("P2P_PORT", MINHA_PORTA))
 DELIMITER = '\n'
 HEARTBEAT_INTERVAL = int(os.environ.get("P2P_HEARTBEAT_INTERVAL", 5))
 
-SERVER_UUID = os.environ.get("P2P_SERVER_UUID", "Grupo_7")
-WORKER_UUID = os.environ.get("P2P_WORKER_UUID", "Worker_7")
+SERVER_UUID = os.environ.get("P2P_SERVER_UUID", "master_7.A.local")
+WORKER_UUID = os.environ.get("P2P_WORKER_UUID", "worker_7.A.local")
 
 CAPACITY = 10
 SATURATION_THRESHOLD = 10
