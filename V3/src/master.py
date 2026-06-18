@@ -23,14 +23,12 @@ from monitor import start_monitor
 # =====================================================================
 # CONFIGURAÇÕES 
 # =====================================================================
-MEU_IP_NA_REDE = '127.0.0.1'
+MEU_IP_NA_REDE = '10.62.217.204'
 MINHA_PORTA = 8000
 
 # Para se conectar ao PC do seu amigo, tire o # e coloque o IP dele:
 MEUS_VIZINHOS_FIXOS = [
-    {"id": "Master_Amigo", "host": "10.62.217.208", "port": 8000},
-    {"id": "Master_Amigo2", "host": "10.62.217.39", "port": 8000},
-
+    {"id": "Master_Amigo", "host": "10.62.217.199", "port": 8000}
 ]
 
 HOST = os.environ.get("P2P_HOST", MEU_IP_NA_REDE)
@@ -38,7 +36,7 @@ PORT = int(os.environ.get("P2P_PORT", MINHA_PORTA))
 DELIMITER = '\n'
 HEARTBEAT_INTERVAL = int(os.environ.get("P2P_HEARTBEAT_INTERVAL", 5))
 
-SERVER_UUID = os.environ.get("P2P_SERVER_UUID", "master_7.A.local")
+SERVER_UUID = os.environ.get("P2P_SERVER_UUID", "master_7_7.A.local")
 WORKER_UUID = os.environ.get("P2P_WORKER_UUID", "worker_7.A.local")
 
 CAPACITY = 10
@@ -74,11 +72,11 @@ logger = logging.getLogger("p2p")
 if os.environ.get("P2P_EMPTY_TASKS") == "true":
     FILA_TAREFAS = []
 else:
-    num_tasks = int(os.environ.get("P2P_NUM_TASKS", 30))
+    num_tasks = int(os.environ.get("P2P_NUM_TASKS", 1000))
     FILA_TAREFAS = ([
         "Compilar_Kernel", "Processar_Pagamentos", "Otimizar_Rotas",
         "Analisar_Vulnerabilidades", "Treinar_Rede_Neural", "Sincronizar_Bancos"
-    ] * 5)[:num_tasks]
+    ] * 200)[:num_tasks]
 
 _tarefas_concluidas_avisado = False
 

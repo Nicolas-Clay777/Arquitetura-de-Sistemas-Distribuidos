@@ -27,7 +27,7 @@ TCP_SOCKET_PORT = 443
 TCP_SOCKET_TLS = True
 TCP_SOCKET_SNI = "nuted-ia.dev"
 
-MONITOR_INTERVAL = 10  # segundos
+MONITOR_INTERVAL = 15  # segundos
 
 
 # =====================================================================
